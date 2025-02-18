@@ -17,7 +17,7 @@ function httpPost($url, $data): bool|string
 {
     $curl = curl_init(url: $url);
     curl_setopt(handle: $curl, option: CURLOPT_POST, value: true);
-    curl_setopt(handle: $curl, option: CURLOPT_POSTFIELDS, value: http_build_query(data: $data));
+    curl_setopt(handle: $curl, option: CURLOPT_POSTFIELDS, value: $data);
     curl_setopt(handle: $curl, option: CURLOPT_RETURNTRANSFER, value: true);
     $response = curl_exec(handle: $curl);
     curl_close(handle: $curl);
@@ -32,13 +32,13 @@ function getUserId(): int
         $userId = $_GET['userId'];
     } else if (isset($_GET['username'])) {
         $username = $_GET['username'];
-        $response = httpPost(
+        $response = json_encode(value: httpPost(
             url: "https://users.roblox.com/v1/usernames/users",
-            data: json_encode([
+            data: [
                 "usernames" => [$username],
                 "excludeBannedUsers" => false
-            ])
-        );
+            ]
+        ));
 
         echo $response;
         exit();
