@@ -60,7 +60,11 @@ if ($action === null)
 if ($action === "user-thumbnail") {
     $type = $_GET['type'] ?? null;
 
-    if ($action !== "full" && $action !== "headshot" && $action !== "bust")
+    if (
+        $type !== "full"
+        && $type !== "headshot"
+        && $type !== "bust"
+    )
         returnError(message: "Invalid type provided, must be 'full', 'headshot' or 'bust'.");
 
     $userId = getUserId();
