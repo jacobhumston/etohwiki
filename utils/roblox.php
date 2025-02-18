@@ -28,8 +28,30 @@ function httpPost($url, $data, null|callable $preCall): bool|string
     return $response;
 }
 
+function httpGet($url, null|callable $preCall): bool|string
+{
+    $curl = curl_init(url: $url);
+    curl_setopt(handle: $curl, option: CURLOPT_HTTPGET, value: true);
+    curl_setopt(handle: $curl, option: CURLOPT_RETURNTRANSFER, value: true);
+
+    if ($preCall !== null)
+        $preCall($curl);
+
+    $response = curl_exec(handle: $curl);
+    curl_close(handle: $curl);
+    return $response;
+}
+
+$preCallApplicationTypeJSON = function ($curl): void {
+    curl_setopt(handle: $curl, option: CURLOPT_HTTPHEADER, value: [
+        "Content-Type: application/json"
+    ]);
+};
+
 function getUserId(): int
 {
+    global $preCallApplicationTypeJSON;
+
     $userId = null;
 
     if (isset($_GET['userId'])) {
@@ -45,11 +67,7 @@ function getUserId(): int
         $response = httpPost(
             url: "https://users.roblox.com/v1/usernames/users",
             data: $data,
-            preCall: function ($curl): void {
-                curl_setopt(handle: $curl, option: CURLOPT_HTTPHEADER, value: [
-                    "Content-Type: application/json"
-                ]);
-            }
+            preCall: $preCallApplicationTypeJSON
         );
 
         return json_decode(json: $response)->data[0]->id ?? null;
@@ -80,9 +98,24 @@ if ($action === "user-thumbnail") {
         returnError(message: "Invalid type provided, must be 'full', 'headshot' or 'bust'.");
 
     $userId = getUserId();
+    $url = [
+        "full" => "https://thumbnails.roblox.com/v1/users/avatar?userIds=$userId&size=352x352&format=Webp&isCircular=false",
+        "headshot" => "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=$userId&size=352x352&format=Webp&isCircular=false",
+        "bust" => "https://thumbnails.roblox.com/v1/users/avatar-bust?userIds=$userId&size=352x352&format=Webp&isCircular=false",
+    ][$type];
 
-    echo $userId;
-    exit();
+    $response = httpGet(
+        url: $url,
+        preCall: $preCallApplicationTypeJSON
+    );
+
+    $imageUrl = json_decode(json: $response)->data[0]->imageUrl ?? null;
+    if ($imageUrl === null)
+        returnError(message: "Failed to get user thumbnail.");
+
+    $image = file_get_contents(filename: $imageUrl);
+    header(header: "Content-Type: image/webp");
+    echo $image;
 }
 
 returnError(message: "Invalid action provided, must be 'user-thumbnail'.");
