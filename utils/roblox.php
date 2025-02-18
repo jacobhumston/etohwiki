@@ -32,15 +32,15 @@ function getUserId(): int
         $userId = $_GET['userId'];
     } else if (isset($_GET['username'])) {
         $username = $_GET['username'];
-        $userId = json_decode(json: httpPost(
+        $response = httpPost(
             url: "https://users.roblox.com/v1/usernames/users",
             data: [
                 "usernames" => [$username],
                 "excludeBannedUsers" => false
             ]
-        ));
+        );
 
-        echo $userId;
+        echo $response;
         exit();
 
         // $userId = $userId->data[0]->id ?? null;
