@@ -127,6 +127,8 @@ if ($action === "user-thumbnail") {
 
     header(header: "Content-Type: image/webp");
     echo $image;
+
+    exit();
 }
 
 if ($action === 'username') {
@@ -163,12 +165,12 @@ if ($action === 'username') {
         echo json_encode(value: [
             "username" => $data->data[0]->name
         ], flags: JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    }
-
-    if ($format === "text") {
+    } else {
         header(header: "Content-Type: text/plain");
         echo $data->data[0]->name;
     }
+
+    exit();
 }
 
 returnError(message: "Invalid action provided, must be 'user-thumbnail' or 'username'.");
