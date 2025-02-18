@@ -130,7 +130,45 @@ if ($action === "user-thumbnail") {
 }
 
 if ($action === 'username') {
+    $userId = getUserId();
 
+    $format = $_GET['format'] ?? null;
+    if (
+        $format !== "json"
+        && $format !== "text"
+    )
+        returnError(message: "Invalid format provided, must be 'json' or 'text'.");
+
+    $userId = getUserId();
+
+    $data = json_encode(value: [
+        "userIds" => [$userId],
+        "excludeBannedUsers" => false
+    ], flags: JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+    $response = httpPost(
+        url: "https://users.roblox.com/v1/users",
+        data: $data,
+        preCall: $preCallApplicationTypeJSON
+    );
+
+    $data = json_decode(json: $response);
+    if (json_last_error() !== JSON_ERROR_NONE)
+        returnError(message: "Invalid JSON response: " . json_last_error_msg());
+    if (!isset($data->data[0]->name))
+        returnError(message: "Name not found in the response.");
+
+    if ($format === "json") {
+        header(header: "Content-Type: application/json");
+        echo json_encode(value: [
+            "username" => $data->data[0]->name
+        ], flags: JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+
+    if ($format === "text") {
+        header(header: "Content-Type: text/plain");
+        echo $data->data[0]->name;
+    }
 }
 
 returnError(message: "Invalid action provided, must be 'user-thumbnail' or 'username'.");
