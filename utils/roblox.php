@@ -43,7 +43,7 @@ function getUserId(): int
         echo $userId;
         exit();
 
-        $userId = $userId->data[0]->id ?? null;
+        // $userId = $userId->data[0]->id ?? null;
     } else {
         returnError(message: "No userId or username provided.");
     }
