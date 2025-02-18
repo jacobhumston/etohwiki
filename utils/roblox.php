@@ -13,12 +13,16 @@ function returnError(string $message, int $code = 400): null
     return exit(json_encode(value: $error));
 }
 
-function httpPost($url, $data): bool|string
+function httpPost($url, $data, null|callable $preCall): bool|string
 {
     $curl = curl_init(url: $url);
     curl_setopt(handle: $curl, option: CURLOPT_POST, value: true);
     curl_setopt(handle: $curl, option: CURLOPT_POSTFIELDS, value: $data);
     curl_setopt(handle: $curl, option: CURLOPT_RETURNTRANSFER, value: true);
+
+    if ($preCall !== null)
+        $preCall($curl);
+
     $response = curl_exec(handle: $curl);
     curl_close(handle: $curl);
     return $response;
@@ -40,14 +44,15 @@ function getUserId(): int
 
         $response = httpPost(
             url: "https://users.roblox.com/v1/usernames/users",
-            data: $data
+            data: $data,
+            preCall: function ($curl): void {
+                curl_setopt(handle: $curl, option: CURLOPT_HTTPHEADER, value: [
+                    "Content-Type: application/json"
+                ]);
+            }
         );
 
-        echo $data;
-        echo $response;
-        exit();
-
-        // $userId = $userId->data[0]->id ?? null;
+        return json_decode(json: $response)->data[0]->id ?? null;
     } else {
         returnError(message: "No userId or username provided.");
     }
