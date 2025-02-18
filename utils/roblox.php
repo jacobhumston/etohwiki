@@ -10,6 +10,7 @@ function returnError(string $message, int $code = 400): null
         "status" => $code,
     ];
     http_response_code(response_code: $code);
+    header(header: "Content-Type: application/json");
     return exit(json_encode(value: $error));
 }
 
@@ -70,7 +71,13 @@ function getUserId(): int
             preCall: $preCallApplicationTypeJSON
         );
 
-        return json_decode(json: $response)->data[0]->id ?? null;
+        $data = json_decode(json: $response);
+        if (json_last_error() !== JSON_ERROR_NONE)
+            returnError(message: "Invalid JSON response: " . json_last_error_msg());
+        if (!isset($data->data[0]->id))
+            returnError(message: "User id not found in the response.");
+
+        return $data->data[0]->id;
     } else {
         returnError(message: "No userId or username provided.");
     }
@@ -109,13 +116,21 @@ if ($action === "user-thumbnail") {
         preCall: $preCallApplicationTypeJSON
     );
 
-    $imageUrl = json_decode(json: $response)->data[0]->imageUrl ?? null;
-    if ($imageUrl === null)
-        returnError(message: "Failed to get user thumbnail.");
+    $data = json_decode(json: $response);
+    if (json_last_error() !== JSON_ERROR_NONE)
+        returnError(message: "Invalid JSON response: " . json_last_error_msg());
+    if (!isset($data->data[0]->imageUrl))
+        returnError(message: "Image URL not found in the response.");
 
+    $imageUrl = $data->data[0]->imageUrl;
     $image = file_get_contents(filename: $imageUrl);
+
     header(header: "Content-Type: image/webp");
     echo $image;
 }
 
-returnError(message: "Invalid action provided, must be 'user-thumbnail'.");
+if ($action === 'username') {
+
+}
+
+returnError(message: "Invalid action provided, must be 'user-thumbnail' or 'username'.");
