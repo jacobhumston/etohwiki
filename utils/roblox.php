@@ -32,14 +32,18 @@ function getUserId(): int
         $userId = $_GET['userId'];
     } else if (isset($_GET['username'])) {
         $username = $_GET['username'];
+
+        $data = json_encode(value: [
+            "usernames" => [$username],
+            "excludeBannedUsers" => false
+        ], flags: JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
         $response = httpPost(
             url: "https://users.roblox.com/v1/usernames/users",
-            data: json_encode(value: [
-                "usernames" => [$username],
-                "excludeBannedUsers" => false
-            ], flags: JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+            data: $data
         );
 
+        echo $data;
         echo $response;
         exit();
 
