@@ -37,7 +37,7 @@ function getUserId(): int
             data: json_encode(value: [
                 "usernames" => [$username],
                 "excludeBannedUsers" => false
-            ])
+            ], flags: JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
         );
 
         echo $response;
