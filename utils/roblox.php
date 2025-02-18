@@ -34,10 +34,10 @@ function getUserId(): int
         $username = $_GET['username'];
         $response = httpPost(
             url: "https://users.roblox.com/v1/usernames/users",
-            data: [
+            data: json_encode([
                 "usernames" => [$username],
                 "excludeBannedUsers" => false
-            ]
+            ])
         );
 
         echo $response;
